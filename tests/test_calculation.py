@@ -1,83 +1,54 @@
-"""
-This module contains tests for the calculator operations and Calculation class.
-
-The tests are designed to verify the correctness of basic arithmetic operations
-(addition, subtraction, multiplication, division) implemented in the calculator.operations module,
-as well as the functionality of the Calculation class that encapsulates these operations.
-"""
-
-# Import statements:
-# Disable specific pylint warnings that are not relevant for this test file.
-# Import the Decimal class for precise decimal arithmetic
-#   which is especially useful in financial calculations.
-# Import pytest for writing test cases.
-# Import the Calculation class from the calculator package to test its functionality.
-# Import the arithmetic operation functions (add, subtract, multiply, divide) to be tested.
-# pylint: disable=unnecessary-dunder-call, invalid-name
+# pylint: disable=missing-module-docstring, missing-function-docstring, invalid-name
 from decimal import Decimal
 import pytest
+
 from calculator.calculation import Calculation
 from calculator.operations import add, subtract, multiply, divide
+from calculator import Calculator
 
-# pytest.mark.parametrize decorator is used to parameterize a test function,
-#   enabling it to be called
-# with different sets of arguments. Here, it's used to test various scenarios of
-#   arithmetic operations
-# with both integer and decimal operands to ensure the operations work correctly
-#   under different conditions.
+### init.py test
+def test_addition():
+    calculation = Calculation(Decimal('5'), Decimal('5'), add)
+    assert calculation.get_result() == Decimal('10')
+
+
+## calculation.py test
 @pytest.mark.parametrize("a, b, operation, expected", [
-    (Decimal('10'), Decimal('5'), add, Decimal('15')),  # Test addition
-    (Decimal('10'), Decimal('5'), subtract, Decimal('5')),  # Test subtraction
-    (Decimal('10'), Decimal('5'), multiply, Decimal('50')),  # Test multiplication
-    (Decimal('10'), Decimal('2'), divide, Decimal('5')),  # Test division
-    (Decimal('10.5'), Decimal('0.5'), add, Decimal('11.0')),  # Test addition with decimals
-    (Decimal('10.5'), Decimal('0.5'), subtract, Decimal('10.0')),  # Test subtraction with decimals
-    (Decimal('10.5'), Decimal('2'), multiply, Decimal('21.0')),  # Test multiplication with decimals
-    (Decimal('10'), Decimal('0.5'), divide, Decimal('20')),  # Test division with decimals
+    (Decimal('10'), Decimal('5'), add, Decimal('15')),
+    (Decimal('10'), Decimal('5'), subtract, Decimal('5')),
+    (Decimal('10'), Decimal('5'), multiply, Decimal('50')),
+    (Decimal('10'), Decimal('2'), divide, Decimal('5')),
+    (Decimal('10.5'), Decimal('0.5'), add, Decimal('11.0')),
+    (Decimal('10.5'), Decimal('0.5'), subtract, Decimal('10.0')),
+    (Decimal('10.5'), Decimal('2'), multiply, Decimal('21.0')),
+    (Decimal('10'), Decimal('0.5'), divide, Decimal('20')),
 ])
-def test_calculation_operations(a, b, operation, expected):
-    """
-    Test calculation operations with various scenarios.
-    
-    This test ensures that the Calculation class correctly performs the arithmetic operation
-    (specified by the 'operation' parameter) on two Decimal operands ('a' and 'b'),
-    and that the result matches the expected outcome.
-    
-    Parameters:
-        a (Decimal): The first operand in the calculation.
-        b (Decimal): The second operand in the calculation.
-        operation (function): The arithmetic operation to perform.
-        expected (Decimal): The expected result of the operation.
-    """
-    # Create a Calculation instance with the provided operands and operation.
-    calc = Calculation(a, b, operation)
-    # Perform the operation and assert that the result matches the expected value.
-    assert calc.perform() == expected, f"Failed {operation.__name__} operation with {a} and {b}"
+def test_calculator_operations(a, b, operation, expected):
+    Calculator.clear_history()
+    calculation = Calculation(a, b, operation)
+    result = calculation.get_result()
+    assert result == expected
 
-def test_calculation_repr():
-    """
-    Test the string representation (__repr__) of the Calculation class.
-    
-    This test verifies that the __repr__ method of a Calculation instance returns a string
-    that accurately represents the state of the Calculation object, including its operands
-    and operation.
-    """
-    # Create a Calculation instance for testing.
-    calc = Calculation(Decimal('10'), Decimal('5'), add)
-    expected_repr = "Calculation(10, 5, add)"  # Define the expected string representation.
-    # Assert that the actual string representation matches the expected string.
-    assert calc.__repr__() == expected_repr, "The __repr__ output doesn't match expected string."
 
-def test_divide_by_zero():
-    """
-    Test division by zero to ensure it raises a ValueError.
-    
-    This test checks that attempting to perform a division operation with a zero divisor
-    correctly raises a ValueError, as dividing by zero is mathematically
-    undefined and should be handled as an error.
-    """
-    # Create a Calculation instance with a zero divisor.
-    calc = Calculation(Decimal('10'), Decimal('0'), divide)
-    # Expect a ValueError to be raised.
-    with pytest.raises(ValueError, match="Cannot divide by zero"):
-        calc.perform()  # Attempt to perform the calculation, which should trigger the ValueError.
+def test_calculator_divideby0():
+    with pytest.raises(ValueError, match="Can't divide by 0"):
+        Calculator.divide(Decimal('5'), Decimal('0'))
+
+
+## history test
+def test_history(): ## looked up
+    Calculator.clear_history()
+    Calculator.add(1, 1)
+    Calculator.subtract(5, 2)
+    history = Calculator.get_history()
+    assert len(history) == 2
+    assert isinstance(history[0], Calculation)
+    assert isinstance(history[1], Calculation)
+    assert history[0].get_result() == 2
+    assert history[1].get_result() == 3
+
+def test_clear_history():
+    Calculator.clear_history()
+    Calculator.add(1, 1)
+    Calculator.clear_history()
+    assert len(Calculator.history) == 0

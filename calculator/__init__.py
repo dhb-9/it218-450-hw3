@@ -1,28 +1,38 @@
 from decimal import Decimal
-from typing import Callable
-from calculator.calculation import Calculation
-from calculator.calculations import Calculations
 from calculator.operations import add, subtract, multiply, divide
-
+from calculator.calculation import Calculation
+    
 class Calculator:
-    @staticmethod
-    def _perform_operation(a: Decimal, b: Decimal, operation: Callable[[Decimal, Decimal], Decimal]):
-        calculation = Calculation.create(a, b, operation)
-        Calculations.add_calculation(calculation)
-        return calculation.perform()
+    history = []
 
     @staticmethod
     def add(a: Decimal, b: Decimal) -> Decimal:
-        return Calculator._perform_operation(a, b, add)
-    
+        calculation = Calculation(a, b, add)
+        Calculator.history.append(calculation)
+        return calculation.get_result()
+
     @staticmethod
     def subtract(a: Decimal, b: Decimal) -> Decimal:
-        return Calculator._perform_operation(a, b, subtract)
+        calculation = Calculation(a, b, subtract)
+        Calculator.history.append(calculation)
+        return calculation.get_result()
     
     @staticmethod
     def multiply(a: Decimal, b: Decimal) -> Decimal:
-        return Calculator._perform_operation(a, b, multiply)
+        calculation = Calculation(a, b, multiply)
+        Calculator.history.append(calculation)
+        return calculation.get_result()
     
     @staticmethod
     def divide(a: Decimal, b: Decimal) -> Decimal:
-        return Calculator._perform_operation(a, b, divide)
+        calculation = Calculation(a, b, divide)
+        Calculator.history.append(calculation)
+        return calculation.get_result()
+
+    @staticmethod
+    def clear_history():
+        Calculator.history.clear()
+
+    @staticmethod
+    def get_history():
+        return Calculator.history
